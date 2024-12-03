@@ -20,7 +20,8 @@ class GameMechs
         int boardSizeX;
         int boardSizeY;
 
-        objPos food;
+        //CHANGE AFTER
+        objPos foodPos;
 
     public:
         GameMechs();
@@ -32,7 +33,7 @@ class GameMechs
         bool getLoseFlagStatus() const;
         void setLoseFlag();
 
-        char getInput() const;
+        char getInput(); //non const function
         void setInput(char this_input);
         void clearInput();
 
@@ -43,9 +44,9 @@ class GameMechs
         void incrementScore();
         
         // More methods should be added here
-        // int getFoodPos(); const
-        // void generateFood(objPosArrayList*);
 
+        void generateFood(objPosArrayList* blockOff); //shouldn't generate food
+        objPos getFoodPos(); 
 };
 
 #endif

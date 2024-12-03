@@ -1,125 +1,107 @@
 #include "Player.h"
 #include "iostream"
 
+
 Player::Player(GameMechs* thisGMRef)
 {
     mainGameMechsRef = thisGMRef;
-    myDir = STOP; 
+    playerPosList = new objPosArrayList(); // Initialize the list to store player positions
+    myDir = STOP; // Initial direction is stationary
 
-    // more actions to be included
-    playerPos.pos -> x = mainGameMechsRef->getBoardSizeX()/2;
-    playerPos.pos -> y = mainGameMechsRef->getBoardSizeY()/2;
-    playerPos.symbol = '@';
+    // Initialize the snake's head at the center of the board
+    playerPosList->insertHead(objPos(mainGameMechsRef->getBoardSizeX()/2, mainGameMechsRef->getBoardSizeY()/2,'@'));
 }
-
 
 Player::~Player()
 {
-    // delete any heap members here
-    //no keyword "new" in the constructor, hence no heap memever
-    
-    //this can be empty
+    // Clean up heap memory
+    delete playerPosList;
 }
 
-objPos Player::getPlayerPos() const
+objPosArrayList* Player::getPlayerPos() const
 {
-    // return the reference to the playerPos arrray list
-    return playerPos;
+    return playerPosList; // Return player's position list
 }
 
 void Player::updatePlayerDir()
 {
+    char input = mainGameMechsRef->getInput(); // Get user input
 
-    char input = mainGameMechsRef->getInput();
-
-    // PPA3 input processing logic
-    if(input != 0)  // if not null character
+    if (input != 0) // Process input if it's not null
     {
         switch(input)
-        {                      
-            case ' ':  // exit
-                mainGameMechsRef->setExitTrue(); 
+        {
+            case ' ':  // Exit game
+                mainGameMechsRef->setExitTrue();
                 break;
-            case 119: //w
+            case 119: // 'w': Move up if direction is valid
                 if (myDir == LEFT || myDir == RIGHT || myDir == STOP)
-                {
                     myDir = UP;
-                }
                 break;
-            case 115: //s
+            case 115: // 's': Move down
                 if (myDir == LEFT || myDir == RIGHT || myDir == STOP)
-                {
                     myDir = DOWN;
-                }
                 break;
-
-            case 97: //a
+            case 97:  // 'a': Move left
                 if (myDir == DOWN || myDir == UP || myDir == STOP)
-                {
                     myDir = LEFT;
-                }               
                 break;
-
-            case 100: //d
+            case 100: // 'd': Move right
                 if (myDir == DOWN || myDir == UP || myDir == STOP)
-                {
                     myDir = RIGHT;
-                } 
-                break;  
-            default:
+                break;
+            default: // Ignore invalid input
                 break;
         }
-        mainGameMechsRef->setInput(0);
+        mainGameMechsRef->setInput(0); // Reset input
     }
-
 }
 
 void Player::movePlayer()
 {
+    objPos temp = playerPosList->getHeadElement().getObjPos(); // Temporary position for head movement
+    objPos head = playerPosList->getHeadElement().getObjPos(); // Current head position
 
+    // Update position based on the direction
     if (myDir == UP)
     {
-        if (playerPos.pos -> y == 1)
-        {
-            playerPos.pos -> y = mainGameMechsRef->getBoardSizeY() - 2;
-        }
-        else {
-            playerPos.pos -> y = playerPos.pos -> y - 1;
-        }
+        temp.pos->y = (head.pos->y == 1) ? mainGameMechsRef->getBoardSizeY() - 2 : temp.pos->y - 1;
+        playerPosList->insertHead(temp);
+        playerPosList->removeTail();
     }
-
     if (myDir == DOWN)
     {
-        if (playerPos.pos -> y == mainGameMechsRef->getBoardSizeY() - 2)
-        {
-            playerPos.pos -> y = 1;
-        }
-        else {
-            playerPos.pos -> y = playerPos.pos -> y + 1;
-        }
+        temp.pos->y = (head.pos->y == mainGameMechsRef->getBoardSizeY() - 2) ? 1 : temp.pos->y + 1;
+        playerPosList->insertHead(temp);
+        playerPosList->removeTail();
     }
-
     if (myDir == LEFT)
     {
-        if (playerPos.pos -> x == 1)
-        {
-            playerPos.pos -> x = mainGameMechsRef->getBoardSizeX() - 2;
-        }
-        else {
-            playerPos.pos -> x = playerPos.pos -> x - 1;
-        }
+        temp.pos->x = (head.pos->x == 1) ? mainGameMechsRef->getBoardSizeX() - 2 : temp.pos->x - 1;
+        playerPosList->insertHead(temp);
+        playerPosList->removeTail();
     }
-
     if (myDir == RIGHT)
     {
-        if (playerPos.pos -> x == mainGameMechsRef->getBoardSizeX() - 2)
+        temp.pos->x = (head.pos->x == mainGameMechsRef->getBoardSizeX() - 2) ? 1 : temp.pos->x + 1;
+        playerPosList->insertHead(temp);
+        playerPosList->removeTail();
+    }
+
+    // Check for collision with the player's body
+    for (int i = 1; i < playerPosList->getSize(); ++i)
+    {
+        if (playerPosList->getElement(i).getObjPos().isPosEqual(&temp))
         {
-            playerPos.pos -> x = 1;
-        }
-        else {
-            playerPos.pos -> x = playerPos.pos -> x + 1;
+            mainGameMechsRef->setLoseFlag();
+            return;
         }
     }
-}
 
-// More methods to be added
+    // Check if player eats the food
+    if (temp.pos->x == mainGameMechsRef->getFoodPos().pos->x && temp.pos->y == mainGameMechsRef->getFoodPos().pos->y)
+    {
+        playerPosList->insertHead(temp); // Grow snake
+        mainGameMechsRef->incrementScore();
+    }
+}
