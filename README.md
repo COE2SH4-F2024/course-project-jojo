@@ -8,7 +8,7 @@ You must watch the briefing video and read through the manual to engage in the d
 Section: [L05]
 
 Team Information
-Member 1 MacID: [jensenjj@mcmaster.ca]
+Member 1 MacID: [jensenjj]
 Member 1 StudentID: [400530011]
 
 Member 2 MacID: [maklaa1]
